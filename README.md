@@ -1,5 +1,9 @@
 # 👁️ Lulo's Eye
 
+<p align="center">
+  <img src="assets/logo.jpg" alt="Lulo's Eye" width="300" />
+</p>
+
 **Real-Time Global Intelligence Platform**
 
 A comprehensive OSINT (Open Source Intelligence) platform that provides real-time global situational awareness through an interactive 3D interface. The next generation of accessible intelligence gathering.
