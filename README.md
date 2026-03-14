@@ -2,7 +2,7 @@
 
 **Real-Time Global Intelligence Platform**
 
-A comprehensive OSINT (Open Source Intelligence) platform that provides real-time global situational awareness through an interactive 3D interface. Named after Ken's son Ari (aka "Lulo"), this represents the next generation of accessible intelligence gathering.
+A comprehensive OSINT (Open Source Intelligence) platform that provides real-time global situational awareness through an interactive 3D interface. The next generation of accessible intelligence gathering.
 
 ## 🛰️ Features
 
@@ -127,7 +127,7 @@ Try these in the address search:
 
 ## 👥 Credits
 
-- **Created for**: Ari "Lulo" Studios
+- **Created by**: Lulo Studios
 - **Developed by**: Ken (KeNFT1) with AI assistance
 - **Intelligence Platform**: ShadowBroker integration
 - **3D Engine**: Cesium.js open source
