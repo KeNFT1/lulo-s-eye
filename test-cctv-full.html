@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CCTV Full Test with Live Feeds</title>
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Cesium.js"></script>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+    <style>
+        .cctv-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+        
+        .cctv-modal-content {
+            background: linear-gradient(145deg, #001100, #002200);
+            border: 2px solid #00ff00;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.5);
+        }
+        
+        .cctv-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid #00ff00;
+            background: rgba(0, 255, 0, 0.1);
+        }
+        
+        .cctv-header h3 {
+            margin: 0;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            text-shadow: 0 0 10px #00ff00;
+        }
+        
+        .cctv-close {
+            background: rgba(255, 0, 0, 0.3);
+            border: 1px solid #ff0000;
+            color: #ff0000;
+            padding: 8px 12px;
+            font-family: 'Courier New', monospace;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        
+        .cctv-close:hover {
+            background: rgba(255, 0, 0, 0.5);
+        }
+        
+        .cctv-info {
+            padding: 15px 20px;
+            font-family: 'Courier New', monospace;
+            color: #ccffcc;
+            font-size: 12px;
+        }
+        
+        .cctv-feed {
+            padding: 20px;
+            background: #000;
+            text-align: center;
+        }
+        
+        .cctv-status {
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+            color: #00ff00;
+            font-size: 11px;
+        }
+        
+        .live-indicator {
+            color: #ff0000;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div id="cesium-container" style="width: 100%; height: 400px;"></div>
+    <button onclick="addTestCameras()">Add Test CCTV</button>
+    <button onclick="loadRealCameras()">Load Real CCTV</button>
+    <button onclick="showTestFeed()">Test Modal</button>
+    <div id="log" style="margin-top: 10px; font-family: monospace; background: black; color: green; padding: 10px; height: 150px; overflow-y: scroll;"></div>
+
+    <!-- CCTV Modal -->
+    <div id="cctv-modal" class="cctv-modal">
+        <div class="cctv-modal-content">
+            <div class="cctv-header">
+                <h3>📹 LIVE CCTV FEED</h3>
+                <button class="cctv-close" onclick="closeCCTVModal()">✕</button>
+            </div>
+            <div id="cctv-info" class="cctv-info">
+                <!-- Camera info will go here -->
+            </div>
+            <div id="cctv-feed" class="cctv-feed">
+                <!-- Feed will go here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI5NTQ2N2RmOC1lYjczLTQyMDgtOWEzMy04NDY2YWU3ZjdiNWYiLCJpZCI6NDAzNTA5LCJpYXQiOjE3NzM0ODEzMTJ9.UmgxGBCO1zYXaIg9iO6eoJ3LdpAXLTUBliDFwuoCjZs';
+        
+        const viewer = new Cesium.Viewer('cesium-container');
+        let clickHandler = null;
+        
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            logDiv.innerHTML += `[${new Date().toLocaleTimeString()}] ${message}<br>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        // Set view to London (where most TfL cameras are)
+        viewer.camera.setView({
+            destination: Cesium.Cartesian3.fromDegrees(-0.1278, 51.5074, 50000)
+        });
+        
+        function setupClickHandlers() {
+            if (!clickHandler) {
+                clickHandler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+                
+                clickHandler.setInputAction((click) => {
+                    const picked = viewer.scene.pick(click.position);
+                    
+                    if (picked && picked.id && picked.id.cctvData) {
+                        log(`📹 Clicked camera: ${picked.id.cctvData.source_agency} - ${picked.id.cctvData.direction_facing}`);
+                        openCCTVModal(picked.id.cctvData);
+                    }
+                }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+            }
+        }
+        
+        function addTestCameras() {
+            log('Adding test cameras...');
+            
+            setupClickHandlers();
+            
+            // Add test cameras in London with mock data
+            const testCameras = [
+                {
+                    lat: 51.5074, lon: -0.1278, 
+                    source_agency: "Test Agency",
+                    direction_facing: "Test Camera 1 - London Center",
+                    media_url: "https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4",
+                    media_type: "video",
+                    id: "test_1",
+                    last_updated: new Date().toISOString(),
+                    refresh_rate_seconds: 15
+                },
+                {
+                    lat: 51.5155, lon: -0.0922, 
+                    source_agency: "Test Agency",
+                    direction_facing: "Test Camera 2 - London East",
+                    media_url: "https://picsum.photos/640/480",
+                    media_type: "image", 
+                    id: "test_2",
+                    last_updated: new Date().toISOString(),
+                    refresh_rate_seconds: 30
+                }
+            ];
+            
+            testCameras.forEach((camera, index) => {
+                const entity = viewer.entities.add({
+                    id: `test_camera_${index}`,
+                    position: Cesium.Cartesian3.fromDegrees(camera.lon, camera.lat, 100),
+                    point: {
+                        pixelSize: 15,
+                        color: Cesium.Color.ORANGE,
+                        outlineColor: Cesium.Color.BLACK,
+                        outlineWidth: 3,
+                        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
+                    },
+                    label: {
+                        text: `📹 ${camera.direction_facing}\\nClick to view feed`,
+                        font: '12px Arial',
+                        fillColor: Cesium.Color.ORANGE,
+                        outlineColor: Cesium.Color.BLACK,
+                        outlineWidth: 2,
+                        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+                        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+                        pixelOffset: new Cesium.Cartesian2(0, -15)
+                    }
+                });
+                
+                // Store camera data for modal
+                entity.cctvData = camera;
+                
+                log(`✅ Added clickable test camera: ${camera.direction_facing}`);
+            });
+        }
+        
+        async function loadRealCameras() {
+            log('Loading real CCTV cameras...');
+            
+            setupClickHandlers();
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/live-data/fast');
+                const data = await response.json();
+                
+                log(`📡 Got ${data.cctv?.length || 0} cameras from ShadowBroker`);
+                
+                if (data.cctv && data.cctv.length > 0) {
+                    // Show first 10 cameras
+                    const camerasToShow = data.cctv.slice(0, 10);
+                    
+                    camerasToShow.forEach((camera, index) => {
+                        if (camera.lon && camera.lat) {
+                            const entity = viewer.entities.add({
+                                id: `real_camera_${index}`,
+                                position: Cesium.Cartesian3.fromDegrees(camera.lon, camera.lat, 100),
+                                point: {
+                                    pixelSize: 12,
+                                    color: Cesium.Color.YELLOW,
+                                    outlineColor: Cesium.Color.RED,
+                                    outlineWidth: 2,
+                                    heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
+                                },
+                                label: {
+                                    text: `📹 ${camera.source_agency}\\n${camera.direction_facing || 'Camera'}\\nClick for live feed`,
+                                    font: '10px Arial',
+                                    fillColor: Cesium.Color.YELLOW,
+                                    outlineColor: Cesium.Color.BLACK,
+                                    outlineWidth: 1,
+                                    style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+                                    verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+                                    pixelOffset: new Cesium.Cartesian2(0, -12)
+                                }
+                            });
+                            
+                            // Store real camera data
+                            entity.cctvData = camera;
+                            
+                            log(`✅ Added clickable camera: ${camera.source_agency} - ${camera.direction_facing}`);
+                        } else {
+                            log(`⚠️ Skipped camera with no coordinates: ${camera.id}`);
+                        }
+                    });
+                    
+                    // Fly to first camera
+                    const firstCamera = camerasToShow.find(c => c.lon && c.lat);
+                    if (firstCamera) {
+                        viewer.camera.flyTo({
+                            destination: Cesium.Cartesian3.fromDegrees(firstCamera.lon, firstCamera.lat, 5000),
+                            duration: 3.0
+                        });
+                        log(`🎯 Flying to: ${firstCamera.source_agency} - ${firstCamera.direction_facing}`);
+                    }
+                } else {
+                    log('❌ No CCTV data available');
+                }
+                
+            } catch (error) {
+                log(`❌ Error loading cameras: ${error.message}`);
+            }
+        }
+        
+        function openCCTVModal(cctvData) {
+            log(`📺 Opening feed for: ${cctvData.source_agency} - ${cctvData.direction_facing}`);
+            
+            const modal = document.getElementById('cctv-modal');
+            const infoDiv = document.getElementById('cctv-info');
+            const feedDiv = document.getElementById('cctv-feed');
+            
+            // Set camera info
+            infoDiv.innerHTML = `
+                <strong>Agency:</strong> ${cctvData.source_agency}<br>
+                <strong>Location:</strong> ${cctvData.direction_facing || 'Unknown'}<br>
+                <strong>Coordinates:</strong> ${cctvData.lat?.toFixed(4) || 'N/A'}, ${cctvData.lon?.toFixed(4) || 'N/A'}<br>
+                <strong>Last Updated:</strong> ${cctvData.last_updated ? new Date(cctvData.last_updated).toLocaleString() : 'Unknown'}<br>
+                <strong>Refresh Rate:</strong> ${cctvData.refresh_rate_seconds || 'N/A'}s
+            `;
+            
+            // Set camera feed
+            if (cctvData.media_type === 'video' && cctvData.media_url) {
+                feedDiv.innerHTML = `
+                    <video controls autoplay muted style="width: 100%; max-height: 300px; background: #000;">
+                        <source src="${cctvData.media_url}" type="video/mp4">
+                        <p style="color: #ff4444;">Video feed unavailable</p>
+                    </video>
+                    <div class="cctv-status">
+                        <span class="live-indicator">🔴 LIVE VIDEO</span>
+                        <span>Auto-refresh every ${cctvData.refresh_rate_seconds || 'N/A'}s</span>
+                    </div>
+                `;
+            } else if (cctvData.media_type === 'image' || cctvData.media_url) {
+                feedDiv.innerHTML = `
+                    <img src="${cctvData.media_url || 'https://picsum.photos/640/480'}" 
+                         style="width: 100%; max-height: 300px; object-fit: cover; background: #000;"
+                         onload="this.style.opacity=1" 
+                         onerror="this.src='https://picsum.photos/640/480'; this.alt='Feed unavailable'">
+                    <div class="cctv-status">
+                        <span class="live-indicator">📸 LIVE IMAGE</span>
+                        <span>Updated: ${cctvData.last_updated ? new Date(cctvData.last_updated).toLocaleTimeString() : 'Unknown'}</span>
+                    </div>
+                `;
+            } else {
+                feedDiv.innerHTML = `
+                    <div style="padding: 40px; color: #ff4444; text-align: center;">
+                        <p>📡 Feed temporarily unavailable</p>
+                        <p>Camera ID: ${cctvData.id}</p>
+                    </div>
+                `;
+            }
+            
+            modal.style.display = 'flex';
+        }
+        
+        function closeCCTVModal() {
+            const modal = document.getElementById('cctv-modal');
+            modal.style.display = 'none';
+        }
+        
+        function showTestFeed() {
+            // Test modal with fake data
+            const testData = {
+                source_agency: "Test Agency",
+                direction_facing: "Sample Live Feed Test",
+                lat: 51.5074,
+                lon: -0.1278,
+                last_updated: new Date().toISOString(),
+                refresh_rate_seconds: 15,
+                media_type: "image",
+                media_url: "https://picsum.photos/640/480",
+                id: "test_modal"
+            };
+            
+            openCCTVModal(testData);
+        }
+        
+        // Close modal when clicking outside
+        document.getElementById('cctv-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'cctv-modal') {
+                closeCCTVModal();
+            }
+        });
+        
+        log('Ready! Try: 1) Add Test CCTV, 2) Load Real CCTV, 3) Test Modal, then click camera icons for live feeds.');
+    </script>
+</body>
+</html>

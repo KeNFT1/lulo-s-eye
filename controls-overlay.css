@@ -1,0 +1,247 @@
+/* Controls Overlay Styles */
+.controls-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.92);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    backdrop-filter: blur(8px);
+    animation: fadeIn 0.3s ease-out;
+}
+
+.controls-overlay.show {
+    display: flex;
+}
+
+.controls-panel {
+    background: linear-gradient(145deg, #001100, #002200);
+    border: 2px solid #00ff00;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 1000px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 0 30px rgba(0, 255, 0, 0.3);
+}
+
+.controls-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #00ff00;
+    background: rgba(0, 255, 0, 0.1);
+}
+
+.controls-header h2 {
+    margin: 0;
+    color: #00ff00;
+    font-family: 'Courier New', monospace;
+    text-shadow: 0 0 10px #00ff00;
+}
+
+.close-btn {
+    background: rgba(255, 0, 0, 0.2);
+    border: 1px solid #ff0000;
+    color: #ff0000;
+    padding: 8px 12px;
+    font-family: 'Courier New', monospace;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.close-btn:hover {
+    background: rgba(255, 0, 0, 0.4);
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+}
+
+.controls-content {
+    padding: 20px;
+}
+
+.control-section {
+    margin-bottom: 30px;
+}
+
+.control-section h3 {
+    color: #00ff00;
+    font-family: 'Courier New', monospace;
+    border-bottom: 1px solid #004400;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    text-shadow: 0 0 5px #00ff00;
+}
+
+.control-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 12px;
+}
+
+.control-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background: rgba(0, 255, 0, 0.05);
+    border: 1px solid #004400;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.control-item:hover {
+    background: rgba(0, 255, 0, 0.1);
+    border-color: #00ff00;
+    box-shadow: 0 0 5px rgba(0, 255, 0, 0.3);
+}
+
+.control-item kbd {
+    background: #002200;
+    border: 1px solid #00ff00;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: #00ff00;
+    min-width: 60px;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.control-item span {
+    color: #ccffcc;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+}
+
+.controls-footer {
+    padding: 20px;
+    border-top: 1px solid #00ff00;
+    background: rgba(0, 255, 0, 0.05);
+    text-align: center;
+}
+
+.controls-footer p {
+    margin: 0;
+    color: #00ff00;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+}
+
+/* Help Hint */
+.help-hint {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(0, 255, 0, 0.9);
+    color: #000;
+    padding: 12px 16px;
+    border-radius: 6px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    font-weight: bold;
+    z-index: 1000;
+    animation: pulse 2s infinite;
+    box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+    cursor: pointer;
+}
+
+.help-hint kbd {
+    background: #000;
+    color: #00ff00;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-weight: normal;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Navigation Search Styles */
+.search-panel {
+    margin-bottom: 15px;
+    display: flex;
+    gap: 5px;
+}
+
+.search-input {
+    flex: 1;
+    background: rgba(0, 255, 0, 0.1);
+    border: 1px solid #00ff00;
+    color: #00ff00;
+    padding: 8px 10px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    border-radius: 4px;
+    outline: none;
+}
+
+.search-input::placeholder {
+    color: rgba(0, 255, 0, 0.6);
+}
+
+.search-input:focus {
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+    background: rgba(0, 255, 0, 0.2);
+}
+
+.search-btn, .location-btn {
+    background: rgba(0, 255, 0, 0.2);
+    border: 1px solid #00ff00;
+    color: #00ff00;
+    padding: 8px 12px;
+    font-family: 'Courier New', monospace;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.search-btn:hover, .location-btn:hover {
+    background: rgba(0, 255, 0, 0.4);
+    box-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+}
+
+/* Coordinates Display */
+.coordinates-panel {
+    background: rgba(0, 255, 0, 0.05);
+    border: 1px solid #004400;
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 15px;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+}
+
+.coord-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+
+.coord-row:last-child {
+    margin-bottom: 0;
+}
+
+.coord-label {
+    color: #00ff00;
+    font-weight: bold;
+}
+
+.coord-value {
+    color: #ccffcc;
+    font-family: 'Courier New', monospace;
+}

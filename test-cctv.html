@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CCTV Test</title>
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Cesium.js"></script>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+</head>
+<body>
+    <div id="cesium-container" style="width: 100%; height: 400px;"></div>
+    <button onclick="addTestCameras()">Add Test CCTV</button>
+    <button onclick="loadRealCameras()">Load Real CCTV</button>
+    <div id="log" style="margin-top: 10px; font-family: monospace; background: black; color: green; padding: 10px;"></div>
+
+    <script>
+        Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI5NTQ2N2RmOC1lYjczLTQyMDgtOWEzMy04NDY2YWU3ZjdiNWYiLCJpZCI6NDAzNTA5LCJpYXQiOjE3NzM0ODEzMTJ9.UmgxGBCO1zYXaIg9iO6eoJ3LdpAXLTUBliDFwuoCjZs';
+        
+        const viewer = new Cesium.Viewer('cesium-container');
+        
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            logDiv.innerHTML += `[${new Date().toLocaleTimeString()}] ${message}<br>`;
+            console.log(message);
+        }
+        
+        // Set view to London (where most TfL cameras are)
+        viewer.camera.setView({
+            destination: Cesium.Cartesian3.fromDegrees(-0.1278, 51.5074, 50000)
+        });
+        
+        function addTestCameras() {
+            log('Adding test cameras...');
+            
+            // Add test cameras in London
+            const testCameras = [
+                {lat: 51.5074, lon: -0.1278, name: "Test Camera 1 - London Center"},
+                {lat: 51.5155, lon: -0.0922, name: "Test Camera 2 - London East"},  
+                {lat: 51.4994, lon: -0.1746, name: "Test Camera 3 - London West"}
+            ];
+            
+            testCameras.forEach((camera, index) => {
+                const entity = viewer.entities.add({
+                    id: `test_camera_${index}`,
+                    position: Cesium.Cartesian3.fromDegrees(camera.lon, camera.lat, 100),
+                    point: {
+                        pixelSize: 15,
+                        color: Cesium.Color.ORANGE,
+                        outlineColor: Cesium.Color.BLACK,
+                        outlineWidth: 3,
+                        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
+                    },
+                    label: {
+                        text: camera.name,
+                        font: '12px Arial',
+                        fillColor: Cesium.Color.ORANGE,
+                        outlineColor: Cesium.Color.BLACK,
+                        outlineWidth: 2,
+                        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+                        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+                        pixelOffset: new Cesium.Cartesian2(0, -15)
+                    }
+                });
+                
+                log(`✅ Added test camera: ${camera.name}`);
+            });
+        }
+        
+        async function loadRealCameras() {
+            log('Loading real CCTV cameras...');
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/live-data/fast');
+                const data = await response.json();
+                
+                log(`📡 Got ${data.cctv?.length || 0} cameras from ShadowBroker`);
+                
+                if (data.cctv && data.cctv.length > 0) {
+                    // Show first 10 cameras
+                    const camerasToShow = data.cctv.slice(0, 10);
+                    
+                    camerasToShow.forEach((camera, index) => {
+                        if (camera.lon && camera.lat) {
+                            const entity = viewer.entities.add({
+                                id: `real_camera_${index}`,
+                                position: Cesium.Cartesian3.fromDegrees(camera.lon, camera.lat, 100),
+                                point: {
+                                    pixelSize: 12,
+                                    color: Cesium.Color.YELLOW,
+                                    outlineColor: Cesium.Color.RED,
+                                    outlineWidth: 2,
+                                    heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
+                                },
+                                label: {
+                                    text: `📹 ${camera.source_agency}\\n${camera.direction_facing || 'Camera'}`,
+                                    font: '10px Arial',
+                                    fillColor: Cesium.Color.YELLOW,
+                                    outlineColor: Cesium.Color.BLACK,
+                                    outlineWidth: 1,
+                                    style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+                                    verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+                                    pixelOffset: new Cesium.Cartesian2(0, -12)
+                                }
+                            });
+                            
+                            log(`✅ Added: ${camera.source_agency} - ${camera.direction_facing}`);
+                        } else {
+                            log(`⚠️ Skipped camera with no coordinates: ${camera.id}`);
+                        }
+                    });
+                    
+                    // Fly to first camera
+                    const firstCamera = camerasToShow.find(c => c.lon && c.lat);
+                    if (firstCamera) {
+                        viewer.camera.flyTo({
+                            destination: Cesium.Cartesian3.fromDegrees(firstCamera.lon, firstCamera.lat, 5000),
+                            duration: 3.0
+                        });
+                        log(`🎯 Flying to: ${firstCamera.source_agency} - ${firstCamera.direction_facing}`);
+                    }
+                } else {
+                    log('❌ No CCTV data available');
+                }
+                
+            } catch (error) {
+                log(`❌ Error loading cameras: ${error.message}`);
+            }
+        }
+        
+        log('Ready! Click buttons to test CCTV display.');
+    </script>
+</body>
+</html>

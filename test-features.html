@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WorldView Features Test</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <span class="logo">🛰️ WORLDVIEW TEST</span>
+            <span class="classification">UNCLASSIFIED</span>
+        </div>
+        <div class="header-right">
+            <span class="timestamp" id="timestamp"></span>
+            <span class="status">TESTING</span>
+        </div>
+    </div>
+
+    <!-- Audio controls -->
+    <div class="volume-control">
+        <button id="mute-btn" class="mute-btn">🔊</button>
+        <input type="range" id="volume-slider" class="volume-slider" min="0" max="100" value="30">
+        <span id="volume-label">30%</span>
+    </div>
+
+    <!-- Test buttons -->
+    <div style="position: fixed; top: 100px; left: 20px; z-index: 999; background: rgba(0, 0, 0, 0.8); border: 1px solid #00ff00; padding: 20px; border-radius: 5px;">
+        <h3 style="color: #00ff00; margin-bottom: 10px;">🧪 Feature Tests</h3>
+        <button class="nav-btn" onclick="testBriefing('sfo')">Test SFO Briefing</button><br>
+        <button class="nav-btn" onclick="testBriefing('ldn')" style="margin-top: 5px;">Test London Briefing</button><br>
+        <button class="nav-btn" onclick="testBriefing('tyo')" style="margin-top: 5px;">Test Tokyo Briefing</button><br>
+        <button class="nav-btn" onclick="testAudio()" style="margin-top: 5px;">🔊 Test Audio</button><br>
+        <button class="nav-btn" onclick="testDecoding()" style="margin-top: 5px;">📡 Test Decoding</button>
+    </div>
+
+    <!-- Test content area -->
+    <div id="test-content" style="position: fixed; top: 100px; right: 20px; width: 400px; z-index: 999; background: rgba(0, 0, 0, 0.8); border: 1px solid #00ff00; padding: 20px; border-radius: 5px;">
+        <h3 style="color: #00ff00; margin-bottom: 10px;">📊 Test Results</h3>
+        <div id="test-results" style="color: #00ff00; font-family: 'Courier New', monospace; font-size: 12px;">
+            Ready for testing...
+        </div>
+    </div>
+
+    <!-- Entity popup placeholder -->
+    <div class="entity-popup" id="entity-popup">
+        <div class="popup-content">
+            <span class="popup-close">&times;</span>
+            <div id="popup-content"></div>
+        </div>
+    </div>
+
+    <script src="src/audio.js"></script>
+    <script>
+        // Include only the mission briefing data and functions we need to test
+        const MISSION_BRIEFINGS = {
+            'sfo': {
+                cityName: 'San Francisco',
+                coordinates: '37.7749°N, 122.4194°W',
+                population: '875,000',
+                facilities: ['Port Authority', 'Federal Building', 'Tech Corridors'],
+                threatLevel: Math.floor(Math.random() * 5) + 1,
+                docNumber: 'INTEL-SF-7749-ALPHA',
+                notes: ['Silicon Valley proximity', 'Major shipping hub', '[REDACTED] presence confirmed']
+            },
+            'ldn': {
+                cityName: 'London',
+                coordinates: '51.5074°N, 0.1278°W',
+                population: '9,540,000',
+                facilities: ['Westminster', 'City Financial District', 'Thames Barrier'],
+                threatLevel: Math.floor(Math.random() * 5) + 1,
+                docNumber: 'INTEL-LN-5074-BRAVO',
+                notes: ['NATO coordination hub', 'Financial center', 'Historic [REDACTED] operations']
+            },
+            'tyo': {
+                cityName: 'Tokyo',
+                coordinates: '35.6762°N, 139.6503°E',
+                population: '37,400,000',
+                facilities: ['Imperial Palace', 'Defense Ministry', 'Tech Research Centers'],
+                threatLevel: Math.floor(Math.random() * 5) + 1,
+                docNumber: 'INTEL-TK-3567-CHARLIE',
+                notes: ['Advanced robotics development', 'Pacific fleet coordination', '[REDACTED] technology exports']
+            }
+        };
+
+        function showMissionBriefing(cityCode) {
+            const briefing = MISSION_BRIEFINGS[cityCode.toLowerCase()];
+            if (!briefing) return;
+            
+            // Play alert sound
+            if (window.audioManager) {
+                window.audioManager.playAlert();
+            }
+            
+            // Create briefing card
+            const briefingCard = document.createElement('div');
+            briefingCard.className = 'classified-card';
+            briefingCard.innerHTML = `
+                <div class="classified-close">&times;</div>
+                <div class="classified-header">
+                    <h2>🛰️ Intelligence Briefing</h2>
+                    <div class="doc-number">Document: ${briefing.docNumber}</div>
+                </div>
+                <div class="briefing-content">
+                    <p><strong>Target:</strong> <span class="typewriter">${briefing.cityName}</span></p>
+                    <p><strong>Coordinates:</strong> <span class="decode-text">${briefing.coordinates}</span></p>
+                    <p><strong>Population:</strong> <span class="decode-text">${briefing.population}</span></p>
+                    <p><strong>Threat Level:</strong> <span style="color: ${getThreatColor(briefing.threatLevel)}">${'█'.repeat(briefing.threatLevel)} (${briefing.threatLevel}/5)</span></p>
+                    
+                    <h3>Key Facilities:</h3>
+                    <ul>
+                        ${briefing.facilities.map(facility => 
+                            `<li class="decode-text">${facility}</li>`
+                        ).join('')}
+                    </ul>
+                    
+                    <h3>Intelligence Notes:</h3>
+                    <ul>
+                        ${briefing.notes.map(note => {
+                            if (note.includes('[REDACTED]')) {
+                                const parts = note.split('[REDACTED]');
+                                return `<li>${parts[0]}<span class="redacted" data-text="CLASSIFIED">[REDACTED]</span>${parts[1] || ''}</li>`;
+                            }
+                            return `<li class="decode-text">${note}</li>`;
+                        }).join('')}
+                    </ul>
+                    
+                    <div style="margin-top: 20px; font-size: 12px; color: #666; text-align: center;">
+                        Classification: UNCLASSIFIED<br>
+                        Auto-dismiss in <span id="briefing-countdown">15</span> seconds
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(briefingCard);
+            
+            // Start countdown timer
+            let countdown = 15;
+            const countdownEl = document.getElementById('briefing-countdown');
+            const countdownInterval = setInterval(() => {
+                countdown--;
+                countdownEl.textContent = countdown;
+                if (countdown <= 0) {
+                    clearInterval(countdownInterval);
+                    closeBriefing(briefingCard);
+                }
+            }, 1000);
+            
+            // Close handlers
+            briefingCard.querySelector('.classified-close').addEventListener('click', () => {
+                clearInterval(countdownInterval);
+                closeBriefing(briefingCard);
+            });
+            
+            briefingCard.addEventListener('click', (e) => {
+                if (e.target === briefingCard) {
+                    clearInterval(countdownInterval);
+                    closeBriefing(briefingCard);
+                }
+            });
+            
+            briefingCard.countdownInterval = countdownInterval;
+        }
+
+        function closeBriefing(briefingCard) {
+            if (briefingCard.countdownInterval) {
+                clearInterval(briefingCard.countdownInterval);
+            }
+            briefingCard.style.animation = 'documentSlideIn 0.5s ease-in reverse';
+            setTimeout(() => {
+                if (briefingCard.parentNode) {
+                    briefingCard.parentNode.removeChild(briefingCard);
+                }
+            }, 500);
+        }
+
+        function getThreatColor(level) {
+            const colors = ['#00ff00', '#90ee90', '#ffff00', '#ff8c00', '#ff0000'];
+            return colors[level - 1] || '#00ff00';
+        }
+
+        function testBriefing(cityCode) {
+            logTest(`Testing briefing for ${cityCode.toUpperCase()}...`);
+            showMissionBriefing(cityCode);
+            logTest(`Briefing displayed for ${cityCode.toUpperCase()}`);
+        }
+
+        function testAudio() {
+            if (!window.audioManager) {
+                logTest('❌ AudioManager not found');
+                return;
+            }
+            logTest('🔊 Testing audio functions...');
+            window.audioManager.playPing();
+            setTimeout(() => {
+                window.audioManager.playAlert();
+                logTest('✅ Audio test completed');
+            }, 1000);
+        }
+
+        function testDecoding() {
+            logTest('📡 Testing decoding animation...');
+            const testDiv = document.createElement('div');
+            testDiv.innerHTML = '<p><strong>Status:</strong> <span class="decode-text">CLASSIFIED INFORMATION</span></p>';
+            document.getElementById('test-results').appendChild(testDiv);
+            logTest('✅ Decoding animation applied');
+        }
+
+        function logTest(message) {
+            const results = document.getElementById('test-results');
+            const p = document.createElement('p');
+            p.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            results.appendChild(p);
+            results.scrollTop = results.scrollHeight;
+        }
+
+        // Initialize audio controls
+        function setupAudioControls() {
+            const muteBtn = document.getElementById('mute-btn');
+            const volumeSlider = document.getElementById('volume-slider');
+            const volumeLabel = document.getElementById('volume-label');
+            
+            if (!muteBtn || !volumeSlider || !volumeLabel || !window.audioManager) {
+                logTest('⚠️ Audio controls incomplete');
+                return;
+            }
+            
+            muteBtn.addEventListener('click', () => {
+                const isMuted = window.audioManager.toggleMute();
+                muteBtn.textContent = isMuted ? '🔇' : '🔊';
+                muteBtn.classList.toggle('muted', isMuted);
+                logTest(`🔊 Audio ${isMuted ? 'MUTED' : 'UNMUTED'}`);
+            });
+            
+            volumeSlider.addEventListener('input', (e) => {
+                const volume = parseFloat(e.target.value) / 100;
+                window.audioManager.setVolume(volume);
+                volumeLabel.textContent = `${e.target.value}%`;
+                logTest(`🔊 Volume: ${e.target.value}%`);
+            });
+            
+            document.addEventListener('click', () => {
+                if (window.audioManager && !window.audioManager.isAmbientPlaying) {
+                    window.audioManager.startAmbient();
+                    logTest('🎵 Ambient audio started');
+                }
+            }, { once: true });
+            
+            logTest('✅ Audio controls initialized');
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            logTest('🛰️ WorldView Features Test initialized');
+            setupAudioControls();
+            
+            // Update timestamp
+            setInterval(() => {
+                const now = new Date();
+                const timestamp = now.toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
+                document.getElementById('timestamp').textContent = timestamp;
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

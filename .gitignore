@@ -1,0 +1,49 @@
+# Lulo's Eye - .gitignore
+
+# API Keys and Secrets
+*.env
+.env.*
+config/credentials.json
+config/api-keys.json
+
+# Logs
+*.log
+logs/
+debug.log
+
+# Cache and temp files
+.cache/
+temp/
+*.tmp
+
+# Node modules (if any)
+node_modules/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Local server files
+server.pid
+serve.lock
+
+# Test data
+test-data/
+mock-feeds/
+
+# Build artifacts
+dist/
+build/
+out/

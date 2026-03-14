@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WORLDVIEW - Satellite Intelligence System</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Cesium.js"></script>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/satellite.js@5.0.0/dist/satellite.min.js"></script>
+</head>
+<body>
+    <!-- Military-style header -->
+    <div class="header">
+        <div class="header-left">
+            <span class="logo">🛰️ WORLDVIEW</span>
+            <span class="classification">UNCLASSIFIED</span>
+        </div>
+        <div class="header-right">
+            <span class="timestamp" id="timestamp"></span>
+            <span class="status">ONLINE</span>
+        </div>
+    </div>
+
+    <!-- Controls panel -->
+    <div class="controls">
+        <div class="control-group">
+            <label>DISPLAY MODE</label>
+            <button class="mode-btn active" data-mode="normal">🔍 OPTICAL</button>
+            <button class="mode-btn" data-mode="nvg">🟢 NVG</button>
+            <button class="mode-btn" data-mode="flir">🔴 FLIR</button>
+            <button class="mode-btn" data-mode="crt">📺 CRT</button>
+            <button class="mode-btn" data-mode="anime">🎨 ANIME</button>
+        </div>
+        
+        <div class="control-group">
+            <label>DATA LAYERS</label>
+            <button class="layer-btn active" data-layer="aircraft">✈️ AIRCRAFT</button>
+            <button class="layer-btn active" data-layer="satellites">🛰️ SATELLITES</button>
+            <button class="layer-btn" data-layer="weather">🌤️ WEATHER</button>
+            <button class="layer-btn" data-layer="traffic">🚗 TRAFFIC</button>
+            <button class="layer-btn" data-layer="cctv">📹 CCTV</button>
+            <button class="layer-btn" data-layer="god-mode">👁️ GOD MODE</button>
+        </div>
+
+        <div class="control-group">
+            <label>RADAR SYSTEMS</label>
+            <button class="layer-btn" id="radar-toggle" data-layer="radar">📡 RADAR</button>
+        </div>
+
+        <div class="control-group">
+            <label>QUICK NAV</label>
+            <button class="nav-btn" data-coords="[-122.4, 37.77, 2000]">SFO</button>
+            <button class="nav-btn" data-coords="[0.1276, 51.5074, 2000]">LDN</button>
+            <button class="nav-btn" data-coords="[139.6917, 35.6895, 2000]">TYO</button>
+            <button class="nav-btn" data-coords="[-74.006, 40.7128, 2000]">NYC</button>
+        </div>
+    </div>
+
+    <!-- Search box -->
+    <div class="search-container">
+        <input type="text" id="search" placeholder="SEARCH COORDINATES OR LOCATION..." />
+        <button id="search-btn">🔍</button>
+    </div>
+
+    <!-- Audio controls -->
+    <div class="volume-control">
+        <button id="mute-btn" class="mute-btn">🔊</button>
+        <input type="range" id="volume-slider" class="volume-slider" min="0" max="100" value="30">
+        <span id="volume-label">30%</span>
+    </div>
+
+    <!-- Alert System -->
+    <div class="alerts-container" id="alerts-container">
+    </div>
+
+    <!-- Info panel -->
+    <div class="info-panel" id="info-panel">
+        <h3>SYSTEM STATUS</h3>
+        <div class="info-line">Aircraft Tracking: <span class="status-ok">ACTIVE</span></div>
+        <div class="info-line">Satellite Network: <span class="status-ok">ACTIVE</span></div>
+        <div class="info-line">Visual Enhancement: <span class="status-ok">ENABLED</span></div>
+        <div class="info-line">Data Refresh: <span id="refresh-rate">10s</span></div>
+        
+        <h3>KEYBOARD SHORTCUTS</h3>
+        <div class="shortcut">1-5: Display Modes</div>
+        <div class="shortcut">G: Toggle God Mode</div>
+        <div class="shortcut">W: Toggle Weather</div>
+        <div class="shortcut">R: Reset View</div>
+        <div class="shortcut">F: Toggle Fullscreen</div>
+    </div>
+
+    <!-- Aircraft Count HUD -->
+    <div class="aircraft-hud" id="aircraft-hud">
+        <div class="hud-content">
+            TRACKING: <span id="aircraft-count">0</span> AIRCRAFT | <span id="satellite-count">0</span> SATELLITES
+        </div>
+    </div>
+
+    <!-- Main 3D viewer -->
+    <div id="cesium-container"></div>
+
+    <!-- Radar Canvas Overlay -->
+    <canvas id="radar-canvas" width="400" height="400"></canvas>
+
+    <!-- Entity popup -->
+    <div class="entity-popup" id="entity-popup">
+        <div class="popup-content">
+            <span class="popup-close">&times;</span>
+            <div id="popup-content"></div>
+        </div>
+    </div>
+
+    <!-- Loading screen -->
+    <div class="loading" id="loading">
+        <div class="loading-spinner"></div>
+        <div>INITIALIZING WORLDVIEW...</div>
+        <div class="loading-status" id="loading-status">Loading satellite constellation...</div>
+    </div>
+
+    <script src="src/satellites.js"></script>
+    <script src="src/weather.js"></script>
+    <script src="src/audio.js"></script>
+    <script src="src/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WORLDVIEW - Satellite Intelligence System</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="controls-overlay.css">
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Cesium.js"></script>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Military-style header -->
+    <div class="header">
+        <div class="header-left">
+            <span class="logo">🛰️ WORLDVIEW</span>
+            <span class="classification">UNCLASSIFIED</span>
+        </div>
+        <div class="header-right">
+            <span class="timestamp" id="timestamp"></span>
+            <span class="mode-indicator" id="mode-indicator">OPTICAL</span>
+        </div>
+    </div>
+
+    <!-- Main content area -->
+    <div class="main-container">
+        <!-- Left sidebar with controls -->
+        <div class="sidebar">
+            <div class="control-panel">
+                <h3>🎯 NAVIGATION</h3>
+                
+                <!-- Address Search -->
+                <div class="search-panel">
+                    <input type="text" id="address-search" placeholder="Search address or coordinates..." class="search-input">
+                    <button id="search-btn" class="search-btn">🔍</button>
+                    <button id="my-location-btn" class="location-btn" title="Go to my location">📍</button>
+                </div>
+                
+                <!-- Coordinates Display -->
+                <div class="coordinates-panel">
+                    <div class="coord-row">
+                        <span class="coord-label">Lat:</span>
+                        <span id="current-lat" class="coord-value">---.-----</span>
+                    </div>
+                    <div class="coord-row">
+                        <span class="coord-label">Lon:</span>
+                        <span id="current-lon" class="coord-value">---.-----</span>
+                    </div>
+                    <div class="coord-row">
+                        <span class="coord-label">Alt:</span>
+                        <span id="current-alt" class="coord-value">--- km</span>
+                    </div>
+                </div>
+                
+                <div class="quick-nav">
+                    <button id="sfo-btn" class="nav-btn">SFO</button>
+                    <button id="ldn-btn" class="nav-btn">LDN</button>
+                    <button id="tyo-btn" class="nav-btn">TYO</button>
+                    <button id="nyc-btn" class="nav-btn">NYC</button>
+                </div>
+                
+                <h3>👁️ VISUAL MODES</h3>
+                <div class="visual-controls">
+                    <button onclick="setVisualMode('normal')" class="mode-btn">1 - OPTICAL</button>
+                    <button onclick="setVisualMode('nightvision')" class="mode-btn">2 - NVG</button>
+                    <button onclick="setVisualMode('thermal')" class="mode-btn">3 - FLIR</button>
+                </div>
+                
+                <h3>📊 INTELLIGENCE STATUS</h3>
+                <div class="status-panel">
+                    <div class="stat-row">
+                        <span>Aircraft:</span>
+                        <span class="stat-value" data-stat="aircraft">0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Satellites:</span>
+                        <span class="stat-value" data-stat="satellites">0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Naval Assets:</span>
+                        <span class="stat-value" data-stat="ships">0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Jamming Zones:</span>
+                        <span class="stat-value" data-stat="jamming">0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>CCTV Cameras:</span>
+                        <span class="stat-value" data-stat="cctv">0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Data Source:</span>
+                        <span class="stat-value" data-stat="source" style="font-size: 10px;">ShadowBroker</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Last Update:</span>
+                        <span class="stat-value" data-stat="time">--:--:--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3D Earth viewer -->
+        <div id="cesium-container" class="viewer-container"></div>
+        
+        <!-- Right sidebar with alerts -->
+        <div class="alert-sidebar">
+            <h3>🚨 INTELLIGENCE ALERTS</h3>
+            <div id="alert-system" class="alert-container">
+                <!-- Alerts appear here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Controls Overlay -->
+    <div class="controls-overlay" id="controls-overlay">
+        <div class="controls-panel">
+            <div class="controls-header">
+                <h2>🎮 TACTICAL CONTROLS</h2>
+                <button class="close-btn" onclick="toggleControlsOverlay()">✕</button>
+            </div>
+            
+            <div class="controls-content">
+                <div class="control-section">
+                    <h3>🌍 NAVIGATION</h3>
+                    <div class="control-grid">
+                        <div class="control-item">
+                            <kbd>Mouse Drag</kbd>
+                            <span>Pan around globe</span>
+                        </div>
+                        <div class="control-item">
+                            <kbd>Mouse Wheel</kbd>
+                            <span>Zoom in/out</span>
+                        </div>
+                        <div class="control-item">
+                            <kbd>Right Click + Drag</kbd>
+                            <span>Rotate view</span>
+                        </div>
+                        <div class="control-item">
+                            <kbd>L</kbd>
+                            <span>Focus Address Search</span>
+                        </div>
+                        <div class="control-item">
+                            <kbd>M</kbd>
+                            <span>Go to My Location</span>
+                        </div>
+                        <div class="control-item">
+                            <kbd>R</kbd>
+                            <span>Reset to NYC</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <h3>👁️ VISUAL MODES</h3>
+                    <div class="control-grid">
+                        <div class="control-item">
+                            <kbd>1</kbd>
+                            <span>Optical (Normal)</span>
+                        </div>
+                        <div class="control-item">
+                            <kbd>2</kbd>
+                            <span>Night Vision Goggles</span>
+                        </div>
+                        <div class="control-item">
+                            <kbd>3</kbd>
+                            <span>FLIR Thermal</span>
+                        </div>
+                        <div class="control-item">
+                            <kbd>4</kbd>
+                            <span>CRT Monitor</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <h3>🛰️ INTELLIGENCE LAYERS</h3>
+                    <div class="control-grid">
+                        <div class="control-item">
+                            <kbd>G</kbd>
+                            <span>Toggle God Mode (Labels)</span>
+                        </div>
+                        <div class="control-item">
+                            <kbd>A</kbd>
+                            <span>Toggle Aircraft Intelligence</span>
+                        </div>
+                        <div class="control-item">
+                            <kbd>S</kbd>
+                            <span>Toggle Satellite Constellation</span>
+                        </div>
+                        <div class="control-item">
+                            <kbd>N</kbd>
+                            <span>Toggle Naval Intelligence</span>
+                        </div>
+                        <div class="control-item">
+                            <kbd>J</kbd>
+                            <span>Toggle GPS Jamming Zones</span>
+                        </div>
+                        <div class="control-item">
+                            <kbd>C</kbd>
+                            <span>Toggle CCTV Surveillance</span>
+                        </div>
+                        <div class="control-item">
+                            <kbd>W</kbd>
+                            <span>Toggle Weather Layer</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <h3>🗺️ QUICK LOCATIONS</h3>
+                    <div class="control-grid">
+                        <div class="control-item">
+                            <kbd>Click SFO</kbd>
+                            <span>San Francisco</span>
+                        </div>
+                        <div class="control-item">
+                            <kbd>Click LDN</kbd>
+                            <span>London</span>
+                        </div>
+                        <div class="control-item">
+                            <kbd>Click TYO</kbd>
+                            <span>Tokyo</span>
+                        </div>
+                        <div class="control-item">
+                            <kbd>Click NYC</kbd>
+                            <span>New York City</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <h3>⚡ SYSTEM</h3>
+                    <div class="control-grid">
+                        <div class="control-item">
+                            <kbd>H</kbd>
+                            <span>Toggle this help overlay</span>
+                        </div>
+                        <div class="control-item">
+                            <kbd>F</kbd>
+                            <span>Toggle fullscreen</span>
+                        </div>
+                        <div class="control-item">
+                            <kbd>Esc</kbd>
+                            <span>Cancel current operation</span>
+                        </div>
+                        <div class="control-item">
+                            <kbd>Space</kbd>
+                            <span>Pause/Resume tracking</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="controls-footer">
+                <p>🔒 Classification: UNCLASSIFIED // Press <kbd>H</kbd> to toggle</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help hint -->
+    <div class="help-hint" id="help-hint">
+        Press <kbd>H</kbd> for controls
+    </div>
+
+    <!-- Loading screen -->
+    <div class="loading" id="loading">
+        <div class="loading-spinner"></div>
+        <div>INITIALIZING WORLDVIEW...</div>
+        <div class="loading-status" id="loading-status">Initializing satellite tracking system...</div>
+    </div>
+
+    <script src="src/shadowbroker-integration.js"></script>
+    <script src="src/app-fixed.js"></script>
+</body>
+</html>

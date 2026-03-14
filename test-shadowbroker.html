@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ShadowBroker Test</title>
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Cesium.js"></script>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+</head>
+<body>
+    <div id="cesium-container" style="width: 100%; height: 500px;"></div>
+    <div id="log"></div>
+
+    <script>
+        // Set Cesium token
+        Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI5NTQ2N2RmOC1lYjczLTQyMDgtOWEzMy04NDY2YWU3ZjdiNWYiLCJpZCI6NDAzNTA5LCJpYXQiOjE3NzM0ODEzMTJ9.UmgxGBCO1zYXaIg9iO6eoJ3LdpAXLTUBliDFwuoCjZs';
+        
+        const viewer = new Cesium.Viewer('cesium-container');
+        
+        function log(message) {
+            console.log(message);
+            document.getElementById('log').innerHTML += message + '<br>';
+        }
+        
+        log('Testing ShadowBroker API...');
+        
+        fetch('http://localhost:8000/api/live-data/fast')
+            .then(response => response.json())
+            .then(data => {
+                log(`✅ API working: ${data.tracked_flights?.length || 0} aircraft, ${data.ships?.length || 0} ships`);
+                
+                // Test adding one aircraft
+                if (data.tracked_flights && data.tracked_flights.length > 0) {
+                    const aircraft = data.tracked_flights[0];
+                    log(`Testing aircraft: ${aircraft.callsign} at ${aircraft.lat}, ${aircraft.lng}`);
+                    
+                    const entity = viewer.entities.add({
+                        position: Cesium.Cartesian3.fromDegrees(aircraft.lng, aircraft.lat, (aircraft.alt || 35000) * 0.3048),
+                        point: {
+                            pixelSize: 15,
+                            color: Cesium.Color.CYAN,
+                            outlineColor: Cesium.Color.WHITE,
+                            outlineWidth: 2
+                        },
+                        label: {
+                            text: aircraft.callsign,
+                            font: '12px Arial',
+                            fillColor: Cesium.Color.CYAN,
+                            outlineColor: Cesium.Color.BLACK,
+                            outlineWidth: 1,
+                            style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+                            verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+                            pixelOffset: new Cesium.Cartesian2(0, -20)
+                        }
+                    });
+                    
+                    // Fly to the aircraft
+                    viewer.camera.flyTo({
+                        destination: Cesium.Cartesian3.fromDegrees(aircraft.lng, aircraft.lat, 50000)
+                    });
+                    
+                    log(`✅ Added aircraft entity: ${aircraft.callsign}`);
+                }
+            })
+            .catch(error => {
+                log(`❌ API Error: ${error.message}`);
+            });
+    </script>
+</body>
+</html>
