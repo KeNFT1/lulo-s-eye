@@ -137,10 +137,28 @@ Try these in the address search:
 - **3D Engine**: Cesium.js open source
 - **Inspiration**: Next-generation OSINT accessibility
 
+## ⚖️ Legal Disclaimer
+
+This software is provided **"as is"**, without warranty of any kind, express or implied. By using Lulo's Eye, you acknowledge and agree to the following:
+
+1. **Public Data Only** — All data displayed by this platform is sourced exclusively from publicly available, open-source intelligence (OSINT) feeds and APIs. No classified, proprietary, or non-public data is collected, stored, or displayed.
+
+2. **No Warranty or Guarantee** — The authors and contributors make no representations or warranties regarding the accuracy, completeness, reliability, or timeliness of any data presented. Data is provided by third-party sources and may contain errors, omissions, or delays.
+
+3. **Limitation of Liability** — In no event shall the authors, contributors, or copyright holders be liable for any claim, damages, or other liability, whether in an action of contract, tort, or otherwise, arising from, out of, or in connection with the software or the use or other dealings in the software. This includes, but is not limited to, any direct, indirect, incidental, special, exemplary, or consequential damages.
+
+4. **Intended Use** — This tool is intended for educational, research, and informational purposes only. Users are solely responsible for ensuring their use of this software complies with all applicable local, state, national, and international laws and regulations.
+
+5. **No Endorsement** — The display of any data (including but not limited to aircraft positions, vessel locations, satellite tracks, or surveillance feeds) does not constitute endorsement, verification, or validation of any entity, activity, or event.
+
+6. **User Responsibility** — Users assume all risk associated with the use of this software. The authors are not responsible for any actions taken based on information provided by this platform.
+
+7. **Third-Party Services** — This software integrates with third-party APIs and data sources, each governed by their own terms of service. Users are responsible for compliance with those terms.
+
 ## 📄 License
 
-MIT License - Open source intelligence for everyone.
+MIT License — See [LICENSE](LICENSE) for details.
 
 ---
 
-**"Eyes everywhere, knowledge for all"** - The Lulo's Eye mission statement.
+**"Eyes everywhere, knowledge for all"** — The Lulo's Eye mission statement.
