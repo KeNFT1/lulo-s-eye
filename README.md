@@ -162,3 +162,11 @@ MIT License — See [LICENSE](LICENSE) for details.
 ---
 
 **"Eyes everywhere, knowledge for all"** — The Lulo's Eye mission statement.
+---
+
+<div align="center">
+  <img src="https://i2c.seadn.io/base/0x7e72abdf47bd21bf0ed6ea8cb8dad60579f3fb50/15a6a479d27af55a24429efacb4050/8f15a6a479d27af55a24429efacb4050.png" width="80" alt="BAYC #2253" />
+  <br/>
+  <sub>Built by <a href="https://github.com/KeNFT1">KeNFT1</a> 🦍 BAYC #2253</sub>
+</div>
+
